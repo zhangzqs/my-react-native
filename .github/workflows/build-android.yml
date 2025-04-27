@@ -1,0 +1,56 @@
+name: React Native Build Android Test APK
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_android:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+
+      - name: Install Yarn
+        run: |
+          npm install -g yarn
+
+      - name: Install dependencies
+        run: |
+          yarn install
+          npx react-native clean
+
+      - name: Grant execute permissions to gradlew
+        run: chmod +x android/gradlew
+
+      - name: Install JDK 18
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '18'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          ndk-version: '27.1.12297006'
+          build-tools-version: '35.0.0'
+          platform-version: '35'
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease
+
+      - name: Publish Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-release
+          path: android/app/build/outputs/apk/release/app-release.apk
