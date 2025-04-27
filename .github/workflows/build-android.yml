@@ -25,7 +25,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          yarn install
+          yarn install --frozen-lockfile
           npx react-native clean
 
       - name: Grant execute permissions to gradlew
